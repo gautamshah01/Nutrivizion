@@ -1,0 +1,248 @@
+import { useState } from 'react'import { useState } from 'react'import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../contexts/AuthContext'
+
+import WebRTCCall from '../call/WebRTCCall'import { useAuth } from '../../contexts/AuthContext'import { 
+
+import toast from 'react-hot-toast'
+
+import WebRTCCall from '../call/WebRTCCall'  X, 
+
+const CallInterface = ({ isOpen, onClose, appointment, callType = 'voice' }) => {
+
+  const { user, userType } = useAuth()import toast from 'react-hot-toast'  Phone, 
+
+  
+
+  // Generate room ID based on appointment  PhoneOff, 
+
+  const roomId = appointment?._id || appointment?.id || `call-${Date.now()}`
+
+const CallInterface = ({ isOpen, onClose, appointment, callType = 'voice' }) => {  Video, 
+
+  const handleCallEnd = () => {
+
+    toast.success('Call ended')  const { user, userType } = useAuth()  VideoOff, 
+
+    onClose()
+
+  }    Mic, 
+
+
+
+  if (!isOpen) return null  // Generate room ID based on appointment  MicOff,
+
+
+
+  console.log('CallInterface rendering with WebRTC:', { isOpen, appointment, callType, roomId });  const roomId = appointment?._id || appointment?.id || `call-${Date.now()}`  User,
+
+
+
+  return (  Clock
+
+    <WebRTCCall
+
+      roomId={roomId}  const handleCallEnd = () => {} from 'lucide-react'
+
+      appointment={appointment}
+
+      callType={callType}    toast.success('Call ended')import { useAuth } from '../../contexts/AuthContext'
+
+      onEndCall={handleCallEnd}
+
+      isOpen={isOpen}    onClose()import WebRTCCall from '../call/WebRTCCall'
+
+    />
+
+  )  }import toast from 'react-hot-toast'
+
+}
+
+
+
+export default CallInterface
+  if (!isOpen) return nullconst CallInterface = ({ isOpen, onClose, appointment, callType = 'voice' }) => {
+
+  const { user, userType } = useAuth()
+
+  console.log('CallInterface rendering with WebRTC:', { isOpen, appointment, callType, roomId });  
+
+  // Generate room ID based on appointment
+
+  return (  const roomId = appointment?._id || appointment?.id || `call-${Date.now()}`
+
+    <WebRTCCall
+
+      roomId={roomId}  const handleCallEnd = () => {
+
+      appointment={appointment}    toast.success('Call ended')
+
+      callType={callType}    onClose()
+
+      onEndCall={handleCallEnd}  }
+
+      isOpen={isOpen}
+
+    />  if (!isOpen) return null
+
+  )
+
+}  console.log('CallInterface rendering with WebRTC:', { isOpen, appointment, callType, roomId });
+
+
+
+export default CallInterface  return (
+    <WebRTCCall
+      roomId={roomId}
+      appointment={appointment}
+      callType={callType}
+      onEndCall={handleCallEnd}
+      isOpen={isOpen}
+    />
+  )
+}
+
+export default CallInterface
+        
+        {/* Header */}
+        <div className="flex items-center justify-between p-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              {callType === 'video' ? <Video className="w-5 h-5" /> : <Phone className="w-5 h-5" />}
+              <span className="font-medium capitalize">{callType} Call</span>
+            </div>
+            {isConnected && (
+              <div className="flex items-center space-x-1 text-green-400">
+                <Clock className="w-4 h-4" />
+                <span className="text-sm">{formatDuration(callDuration)}</span>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-white rounded-full"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Main Call Area */}
+        <div className="flex-1 flex items-center justify-center p-6">
+          {callStatus === 'connecting' ? (
+            <div className="text-center">
+              <div className="w-32 h-32 bg-gray-700 rounded-full flex items-center justify-center mb-6 mx-auto">
+                <User className="w-16 h-16 text-gray-400" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-2">{otherParticipant}</h3>
+              <p className="text-gray-400 mb-4">Connecting...</p>
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              </div>
+            </div>
+          ) : callStatus === 'connected' ? (
+            <div className="text-center">
+              {callType === 'video' ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full max-w-4xl">
+                  {/* Other participant video */}
+                  <div className="relative bg-gray-800 rounded-lg aspect-video flex items-center justify-center">
+                    {isVideoOn ? (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <User className="w-16 h-16 mx-auto mb-2" />
+                          <p className="text-lg font-medium">{otherParticipant}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <VideoOff className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                        <p className="text-gray-400">Camera is off</p>
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded text-sm">
+                      {otherParticipant}
+                    </div>
+                  </div>
+
+                  {/* Your video */}
+                  <div className="relative bg-gray-800 rounded-lg aspect-video flex items-center justify-center">
+                    {isVideoOn ? (
+                      <div className="w-full h-full bg-gradient-to-br from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <User className="w-16 h-16 mx-auto mb-2" />
+                          <p className="text-lg font-medium">You</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <VideoOff className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                        <p className="text-gray-400">Your camera is off</p>
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded text-sm">
+                      You
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div className="w-32 h-32 bg-green-600 rounded-full flex items-center justify-center mb-6 mx-auto">
+                    <User className="w-16 h-16 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-semibold mb-2">{otherParticipant}</h3>
+                  <p className="text-green-400 mb-4">Call in progress</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center">
+              <div className="w-32 h-32 bg-red-600 rounded-full flex items-center justify-center mb-6 mx-auto">
+                <PhoneOff className="w-16 h-16 text-white" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-2">Call Ended</h3>
+              <p className="text-gray-400">Duration: {formatDuration(callDuration)}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Call Controls */}
+        {callStatus === 'connected' && (
+          <div className="p-6 bg-gray-800">
+            <div className="flex items-center justify-center space-x-6">
+              <button
+                onClick={toggleMute}
+                className={`p-4 rounded-full ${
+                  isMuted ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-700 hover:bg-gray-600'
+                }`}
+                title={isMuted ? 'Unmute' : 'Mute'}
+              >
+                {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+              </button>
+
+              {callType === 'video' && (
+                <button
+                  onClick={toggleVideo}
+                  className={`p-4 rounded-full ${
+                    !isVideoOn ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
+                  title={isVideoOn ? 'Turn off camera' : 'Turn on camera'}
+                >
+                  {isVideoOn ? <Video className="w-6 h-6" /> : <VideoOff className="w-6 h-6" />}
+                </button>
+              )}
+
+              <button
+                onClick={handleEndCall}
+                className="p-4 bg-red-600 hover:bg-red-700 rounded-full"
+                title="End call"
+              >
+                <PhoneOff className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default CallInterface

@@ -1,0 +1,108 @@
+/* Base64 encoded nutrivision logo */
+.nutrivision-logo {
+  width: auto;
+  height: 2rem; /* 32px equivalent to text-xl */
+  display: inline-block;
+  content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==');
+}
+
+.nutrivision-logo-large {
+  width: auto;
+  height: 3rem; /* 48px for larger contexts */
+  display: inline-block;
+}
+
+/* Typing animation for the tagline */
+.typing-text {
+  font-family: 'Inter', 'system-ui', '-apple-system', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 3px solid #059669;
+  width: 0;
+  animation: typing 3.5s steps(35, end) forwards, blink-cursor 0.8s infinite;
+  animation-delay: 1s;
+  letter-spacing: 0.02em;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink-cursor {
+  from, to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: #059669;
+  }
+}
+
+/* Enhanced blur background */
+.hero-bg-blur {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.hero-content-bg {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Logo hover effects */
+.logo-container:hover .nutrivision-logo {
+  transform: scale(1.05);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Enhanced background blur */
+.enhanced-blur-bg {
+  backdrop-filter: blur(15px) saturate(180%);
+  -webkit-backdrop-filter: blur(15px) saturate(180%);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* NutriVision logo styling */
+.nutrivision-hero-logo {
+  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease-in-out infinite;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.nutrivision-navbar-logo, .nutrivision-footer-logo {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.nutrivision-navbar-logo:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Logo text styling */
+.nutrivizion-text {
+  font-family: 'Inter', 'system-ui', '-apple-system', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, #059669, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

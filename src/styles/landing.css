@@ -1,0 +1,43 @@
+/* Additional animations for landing page */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Background pattern fallback */
+.nutrition-bg-fallback {
+  background: 
+    linear-gradient(135deg, 
+      rgba(34, 197, 94, 0.1) 0%, 
+      rgba(255, 255, 255, 0.9) 25%, 
+      rgba(249, 115, 22, 0.1) 50%,
+      rgba(34, 197, 94, 0.1) 75%,
+      rgba(255, 255, 255, 0.9) 100%
+    ),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 20px,
+      rgba(34, 197, 94, 0.05) 20px,
+      rgba(34, 197, 94, 0.05) 40px
+    );
+}

@@ -1,0 +1,1063 @@
+import { useState, useEffect } from 'react'
+import {
+  Calendar, Users, DollarSign, MessageCircle, Star, Clock, Video, Phone,
+  Bell, Settings, FileText, Upload, Edit, Download, CreditCard, User, Shield,
+  HelpCircle, Eye, Plus, Filter, Search, CheckCircle, AlertCircle, XCircle,
+  Menu, X, ChevronRight, BarChart3, PieChart, Activity, Wallet
+} from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
+import toast from 'react-hot-toast'
+import api from '../services/api'
+
+const NutritionistDashboard = () => {
+  const { user } = useAuth()
+  const [activeTab, setActiveTab] = useState('overview')
+  const [stats, setStats] = useState({
+    totalPatients: 0,
+    monthlyEarnings: 0,
+    totalEarnings: 0,
+    upcomingAppointments: 0,
+    completedSessions: 0,
+    avgRating: 0,
+    unreadMessages: 0,
+    pendingPayouts: 0
+  })
+
+  const [appointments, setAppointments] = useState([])
+  const [messages, setMessages] = useState([])
+  const [earnings, setEarnings] = useState([])
+  const [patients, setPatients] = useState([])
+  const [notifications, setNotifications] = useState([])
+  const [profile, setProfile] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true)
+      
+      // Fetch real appointments from API
+      const response = await api.get('/appointments/nutritionist/dashboard')
+      const appointmentsData = response.data.appointments || []
+      
+      // Calculate real stats from appointments
+      const pendingAppointments = appointmentsData.filter(apt => apt.approvalStatus === 'pending').length
+      const upcomingAppointments = appointmentsData.filter(apt => apt.status === 'scheduled' && apt.approvalStatus === 'approved').length
+      const completedAppointments = appointmentsData.filter(apt => apt.status === 'completed').length
+      
+      setStats({
+        totalPatients: appointmentsData.length,
+        monthlyEarnings: completedAppointments * 75,
+        totalEarnings: completedAppointments * 75,
+        upcomingAppointments: upcomingAppointments,
+        completedSessions: completedAppointments,
+        avgRating: 4.8,
+        unreadMessages: 0,
+        pendingPayouts: 0
+      })
+      
+      // Set real appointments data
+      setAppointments(appointmentsData)
+      setMessages([])
+      setEarnings([])
+      setPatients([])
+      setNotifications([])
+      
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error)
+      toast.error('Failed to load dashboard data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+      setAppointments([
+        {
+          id: 1,
+          patientName: 'Sarah Johnson',
+          patientEmail: 'sarah@email.com',
+          time: '2:00 PM',
+          date: 'Today',
+          type: 'video',
+          status: 'upcoming',
+          duration: 60,
+          fee: 75
+        },
+        {
+          id: 2,
+          patientName: 'Mike Chen',
+          patientEmail: 'mike@email.com',
+          time: '3:30 PM',
+          date: 'Today',
+          type: 'chat',
+          status: 'upcoming',
+          duration: 30,
+          fee: 45
+        },
+        {
+          id: 3,
+          patientName: 'Emma Wilson',
+          patientEmail: 'emma@email.com',
+          time: '10:00 AM',
+          date: 'Yesterday',
+          type: 'video',
+          status: 'completed',
+          duration: 45,
+          fee: 60
+        },
+        {
+          id: 4,
+          patientName: 'David Lee',
+          patientEmail: 'david@email.com',
+          time: '4:00 PM',
+          date: 'Yesterday',
+          type: 'video',
+          status: 'missed',
+          duration: 60,
+          fee: 75
+        }
+      ])
+
+      setMessages([
+        {
+          id: 1,
+          patientName: 'Emma Wilson',
+          patientId: 'p1',
+          message: 'Thank you for the meal plan! I have a question about portion sizes.',
+          time: '10 mins ago',
+          unread: true,
+          avatar: null
+        },
+        {
+          id: 2,
+          patientName: 'John Davis',
+          patientId: 'p2',
+          message: 'Can we reschedule tomorrow\'s session? Something urgent came up.',
+          time: '1 hour ago',
+          unread: true,
+          avatar: null
+        },
+        {
+          id: 3,
+          patientName: 'Lisa Brown',
+          patientId: 'p3',
+          message: 'The diet plan is working great! Lost 3 pounds this week.',
+          time: '2 hours ago',
+          unread: false,
+          avatar: null
+        }
+      ])
+
+      setEarnings([
+        {
+          id: 1,
+          date: '2024-10-01',
+          patient: 'Sarah Johnson',
+          service: 'Video Consultation',
+          amount: 75,
+          status: 'paid',
+          paymentMethod: 'Credit Card',
+          transactionId: 'TXN001'
+        },
+        {
+          id: 2,
+          date: '2024-09-30',
+          patient: 'Mike Chen',
+          service: 'Chat Consultation',
+          amount: 45,
+          status: 'pending',
+          paymentMethod: 'PayPal',
+          transactionId: 'TXN002'
+        },
+        {
+          id: 3,
+          date: '2024-09-29',
+          patient: 'Emma Wilson',
+          service: 'Video Consultation',
+          amount: 60,
+          status: 'paid',
+          paymentMethod: 'Credit Card',
+          transactionId: 'TXN003'
+        }
+      ])
+
+      setPatients([
+        {
+          id: 'p1',
+          name: 'Emma Wilson',
+          email: 'emma@email.com',
+          phone: '+1 (555) 123-4567',
+          joinDate: '2024-08-15',
+          totalSessions: 12,
+          lastSession: '2024-09-28',
+          status: 'active',
+          notes: 'Weight loss goal: 15 lbs. Vegetarian diet preference. Allergic to nuts.',
+          currentWeight: 165,
+          targetWeight: 150,
+          age: 28,
+          gender: 'Female'
+        },
+        {
+          id: 'p2',
+          name: 'John Davis',
+          email: 'john@email.com',
+          phone: '+1 (555) 987-6543',
+          joinDate: '2024-09-01',
+          totalSessions: 6,
+          lastSession: '2024-09-25',
+          status: 'active',
+          notes: 'Sports nutrition focus. Marathon training. Needs high protein diet.',
+          currentWeight: 180,
+          targetWeight: 175,
+          age: 32,
+          gender: 'Male'
+        }
+      ])
+
+      setNotifications([
+        {
+          id: 1,
+          type: 'appointment',
+          title: 'Upcoming Appointment',
+          message: 'Video call with Sarah Johnson in 30 minutes',
+          time: '30 mins',
+          read: false
+        },
+        {
+          id: 2,
+          type: 'payment',
+          title: 'Payment Received',
+          message: '$75 received from Emma Wilson',
+          time: '2 hours',
+          read: false
+        },
+        {
+          id: 3,
+          type: 'message',
+          title: 'New Message',
+          message: 'John Davis sent you a message',
+          time: '3 hours',
+          read: true
+        }
+      ])
+
+      setProfile({
+        name: user?.name || 'Dr. Nutritionist',
+        email: user?.email || 'nutritionist@example.com',
+        phone: '+1 (555) 123-4567',
+        bio: 'Certified nutritionist with 8+ years of experience in weight management and sports nutrition. Passionate about helping clients achieve their health goals through personalized nutrition plans.',
+        specializations: ['Weight Management', 'Sports Nutrition', 'Clinical Nutrition', 'Diabetes Management'],
+        qualification: 'MS in Nutrition Science, RD, CDE',
+        experience: 8,
+        consultationFee: 75,
+        rating: 4.8,
+        totalReviews: 143,
+        availability: {
+          monday: { start: '09:00', end: '17:00', available: true },
+          tuesday: { start: '09:00', end: '17:00', available: true },
+          wednesday: { start: '09:00', end: '17:00', available: true },
+          thursday: { start: '09:00', end: '17:00', available: true },
+          friday: { start: '09:00', end: '17:00', available: true },
+          saturday: { start: '10:00', end: '14:00', available: true },
+          sunday: { start: '10:00', end: '14:00', available: false }
+        }
+      })
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+      toast.error('Failed to load dashboard data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const sidebarItems = [
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'appointments', label: 'Appointments', icon: Calendar },
+    { id: 'messages', label: 'Messages', icon: MessageCircle, badge: stats.unreadMessages },
+    { id: 'earnings', label: 'Earnings', icon: DollarSign },
+    { id: 'patients', label: 'Patient Records', icon: Users },
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'notifications', label: 'Notifications', icon: Bell, badge: notifications.filter(n => !n.read).length },
+    { id: 'settings', label: 'Settings', icon: Settings }
+  ]
+
+  const handleStartCall = (appointment) => {
+    const roomName = `nutrition-${appointment.id}-${Date.now()}`
+    const callWindow = window.open(
+      `/call?room=${roomName}&name=${encodeURIComponent(user?.name || 'Nutritionist')}&type=video`,
+      '_blank',
+      'width=1200,height=800'
+    )
+    
+    toast.success(`Video call started for ${appointment.patientName}`)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Render different content based on active tab
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return <OverviewTab stats={stats} appointments={appointments} messages={messages} earnings={earnings} />
+      case 'appointments':
+        return <AppointmentsTab appointments={appointments} onStartCall={handleStartCall} />
+      case 'messages':
+        return <MessagesTab messages={messages} />
+      case 'earnings':
+        return <EarningsTab earnings={earnings} stats={stats} />
+      case 'patients':
+        return <PatientsTab patients={patients} />
+      case 'profile':
+        return <ProfileTab profile={profile} />
+      case 'notifications':
+        return <NotificationsTab notifications={notifications} />
+      case 'settings':
+        return <SettingsTab />
+      default:
+        return <OverviewTab stats={stats} appointments={appointments} messages={messages} earnings={earnings} />
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0 lg:static lg:inset-0`}>
+        <div className="flex items-center justify-between h-16 px-6 border-b">
+          <h2 className="text-xl font-bold text-gray-800">Dashboard</h2>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <nav className="mt-6">
+          {sidebarItems.map((item) => {
+            const Icon = item.icon
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`w-full flex items-center px-6 py-3 text-left transition-colors ${
+                  activeTab === item.id
+                    ? 'bg-green-50 text-green-700 border-r-2 border-green-500'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <Icon className="h-5 w-5 mr-3" />
+                <span className="font-medium">{item.label}</span>
+                {item.badge > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-1">
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 lg:ml-0">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 mr-3"
+                >
+                  <Menu className="h-6 w-6" />
+                </button>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {sidebarItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    Welcome back, {user?.name || 'Doctor'}!
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <button className="relative p-2 text-gray-400 hover:text-gray-600">
+                  <Bell className="h-6 w-6" />
+                  {notifications.filter(n => !n.read).length > 0 && (
+                    <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                      {notifications.filter(n => !n.read).length}
+                    </span>
+                  )}
+                </button>
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {user?.name?.charAt(0) || 'D'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="p-6">
+          {renderContent()}
+        </div>
+      </div>
+
+      {/* Overlay for mobile sidebar */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+    </div>
+  )
+}
+
+// Overview Tab Component
+const OverviewTab = ({ stats, appointments, messages, earnings }) => (
+  <div className="space-y-6">
+    {/* Stats Grid */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <Users className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-500">Total Patients</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.totalPatients}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center">
+          <div className="p-2 bg-green-100 rounded-lg">
+            <DollarSign className="h-6 w-6 text-green-600" />
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-500">Monthly Earnings</p>
+            <p className="text-2xl font-bold text-gray-900">${stats.monthlyEarnings}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center">
+          <div className="p-2 bg-purple-100 rounded-lg">
+            <Calendar className="h-6 w-6 text-purple-600" />
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-500">Upcoming Appointments</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.upcomingAppointments}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center">
+          <div className="p-2 bg-yellow-100 rounded-lg">
+            <Star className="h-6 w-6 text-yellow-600" />
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-500">Average Rating</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.avgRating}/5</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Recent Activity */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Upcoming Appointments */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6 border-b">
+          <h3 className="text-lg font-medium text-gray-900">Upcoming Appointments</h3>
+        </div>
+        <div className="p-6 space-y-4">
+          {appointments.filter(apt => apt.status === 'upcoming').slice(0, 3).map((appointment) => (
+            <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-medium">
+                    {appointment.patientName.charAt(0)}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{appointment.patientName}</p>
+                  <p className="text-sm text-gray-500">{appointment.time} - {appointment.date}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                {appointment.type === 'video' ? (
+                  <Video className="h-4 w-4 text-blue-600" />
+                ) : (
+                  <MessageCircle className="h-4 w-4 text-green-600" />
+                )}
+                <span className="text-sm text-gray-500">${appointment.fee}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Messages */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6 border-b">
+          <h3 className="text-lg font-medium text-gray-900">Recent Messages</h3>
+        </div>
+        <div className="p-6 space-y-4">
+          {messages.slice(0, 3).map((message) => (
+            <div key={message.id} className="flex items-start space-x-3">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-medium">
+                  {message.patientName.charAt(0)}
+                </span>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium text-gray-900">{message.patientName}</p>
+                  <p className="text-xs text-gray-500">{message.time}</p>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">{message.message}</p>
+                {message.unread && (
+                  <span className="inline-block w-2 h-2 bg-red-500 rounded-full mt-2"></span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+// Appointments Tab Component
+const AppointmentsTab = ({ appointments, onStartCall }) => (
+  <div className="space-y-6">
+    <div className="flex justify-between items-center">
+      <h2 className="text-xl font-bold text-gray-900">Appointments</h2>
+      <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+        <Plus className="h-4 w-4 mr-2 inline" />
+        New Appointment
+      </button>
+    </div>
+
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="px-6 py-4 border-b">
+        <div className="flex space-x-4">
+          <button className="px-4 py-2 text-sm font-medium text-green-600 border-b-2 border-green-600">
+            All
+          </button>
+          <button className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
+            Today
+          </button>
+          <button className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
+            Upcoming
+          </button>
+          <button className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
+            Completed
+          </button>
+        </div>
+      </div>
+      <div className="divide-y">
+        {appointments.map((appointment) => (
+          <div key={appointment.id} className="p-6 hover:bg-gray-50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-medium">
+                    {appointment.patientName.charAt(0)}
+                  </span>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900">{appointment.patientName}</h4>
+                  <p className="text-sm text-gray-500">{appointment.patientEmail}</p>
+                  <div className="flex items-center mt-1 space-x-4">
+                    <span className="text-sm text-gray-500">
+                      <Calendar className="h-4 w-4 inline mr-1" />
+                      {appointment.date} at {appointment.time}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {appointment.type === 'video' ? <Video className="h-4 w-4 inline mr-1" /> : <MessageCircle className="h-4 w-4 inline mr-1" />}
+                      {appointment.duration} min
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className={`px-2 py-1 text-xs rounded-full ${
+                  appointment.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
+                  appointment.status === 'completed' ? 'bg-green-100 text-green-800' :
+                  'bg-red-100 text-red-800'
+                }`}>
+                  {appointment.status}
+                </span>
+                <span className="font-medium text-gray-900">${appointment.fee}</span>
+                {appointment.status === 'upcoming' && (
+                  <>
+                    {appointment.type === 'video' && (
+                      <button
+                        onClick={() => onStartCall(appointment)}
+                        className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                      >
+                        Start Call
+                      </button>
+                    )}
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)
+
+// Messages Tab Component  
+const MessagesTab = ({ messages }) => (
+  <div className="space-y-6">
+    <div className="flex justify-between items-center">
+      <h2 className="text-xl font-bold text-gray-900">Messages</h2>
+      <div className="flex space-x-2">
+        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+          <Plus className="h-4 w-4 mr-2 inline" />
+          New Message
+        </button>
+      </div>
+    </div>
+
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="divide-y">
+        {messages.map((message) => (
+          <div key={message.id} className={`p-6 hover:bg-gray-50 ${message.unread ? 'bg-blue-50' : ''}`}>
+            <div className="flex items-start space-x-4">
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">
+                  {message.patientName.charAt(0)}
+                </span>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-gray-900">{message.patientName}</h4>
+                  <span className="text-sm text-gray-500">{message.time}</span>
+                </div>
+                <p className="text-gray-600 mt-1">{message.message}</p>
+                {message.unread && (
+                  <div className="flex items-center mt-2">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                    <span className="text-sm text-blue-600 font-medium">Unread</span>
+                  </div>
+                )}
+              </div>
+              <button className="text-gray-400 hover:text-gray-600">
+                <MessageCircle className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)
+
+// Earnings Tab Component
+const EarningsTab = ({ earnings, stats }) => (
+  <div className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center">
+          <div className="p-2 bg-green-100 rounded-lg">
+            <DollarSign className="h-6 w-6 text-green-600" />
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-500">Total Earnings</p>
+            <p className="text-2xl font-bold text-gray-900">${stats.totalEarnings}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <CreditCard className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-500">This Month</p>
+            <p className="text-2xl font-bold text-gray-900">${stats.monthlyEarnings}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center">
+          <div className="p-2 bg-yellow-100 rounded-lg">
+            <Wallet className="h-6 w-6 text-yellow-600" />
+          </div>
+          <div className="ml-4">
+            <p className="text-sm text-gray-500">Pending Payout</p>
+            <p className="text-2xl font-bold text-gray-900">${stats.pendingPayouts}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="px-6 py-4 border-b">
+        <h3 className="text-lg font-medium text-gray-900">Recent Transactions</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Patient
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Service
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Amount
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {earnings.map((earning) => (
+              <tr key={earning.id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {earning.date}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {earning.patient}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {earning.service}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                  ${earning.amount}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    earning.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {earning.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)
+
+// Patients Tab Component
+const PatientsTab = ({ patients }) => (
+  <div className="space-y-6">
+    <div className="flex justify-between items-center">
+      <h2 className="text-xl font-bold text-gray-900">Patient Records</h2>
+      <div className="flex space-x-2">
+        <div className="relative">
+          <Search className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search patients..."
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+        </div>
+        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+          <Plus className="h-4 w-4 mr-2 inline" />
+          Add Patient
+        </button>
+      </div>
+    </div>
+
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Patient
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Contact
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Sessions
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Last Session
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {patients.map((patient) => (
+              <tr key={patient.id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">
+                        {patient.name.charAt(0)}
+                      </span>
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">{patient.name}</div>
+                      <div className="text-sm text-gray-500">{patient.age}y, {patient.gender}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{patient.email}</div>
+                  <div className="text-sm text-gray-500">{patient.phone}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {patient.totalSessions}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {patient.lastSession}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    patient.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {patient.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button className="text-green-600 hover:text-green-900 mr-3">
+                    <Eye className="h-4 w-4" />
+                  </button>
+                  <button className="text-blue-600 hover:text-blue-900 mr-3">
+                    <Edit className="h-4 w-4" />
+                  </button>
+                  <button className="text-gray-600 hover:text-gray-900">
+                    <FileText className="h-4 w-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)
+
+// Profile Tab Component
+const ProfileTab = ({ profile }) => (
+  <div className="space-y-6">
+    <div className="bg-white rounded-lg shadow p-6">
+      <div className="flex items-center space-x-6">
+        <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center">
+          <span className="text-white text-3xl font-bold">
+            {profile.name?.charAt(0) || 'D'}
+          </span>
+        </div>
+        <div className="flex-1">
+          <h3 className="text-2xl font-bold text-gray-900">{profile.name}</h3>
+          <p className="text-gray-600">{profile.qualification}</p>
+          <div className="flex items-center mt-2">
+            <Star className="h-4 w-4 text-yellow-400 mr-1" />
+            <span className="text-sm text-gray-600">
+              {profile.rating} ({profile.totalReviews} reviews)
+            </span>
+          </div>
+        </div>
+        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+          <Edit className="h-4 w-4 mr-2 inline" />
+          Edit Profile
+        </button>
+      </div>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="bg-white rounded-lg shadow p-6">
+        <h4 className="text-lg font-medium text-gray-900 mb-4">Professional Information</h4>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Specializations</label>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {profile.specializations?.map((spec, index) => (
+                <span key={index} className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                  {spec}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Experience</label>
+            <p className="mt-1 text-sm text-gray-900">{profile.experience} years</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Consultation Fee</label>
+            <p className="mt-1 text-sm text-gray-900">${profile.consultationFee}/session</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-6">
+        <h4 className="text-lg font-medium text-gray-900 mb-4">Contact Information</h4>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <p className="mt-1 text-sm text-gray-900">{profile.email}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Phone</label>
+            <p className="mt-1 text-sm text-gray-900">{profile.phone}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Bio</label>
+            <p className="mt-1 text-sm text-gray-600">{profile.bio}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+// Notifications Tab Component
+const NotificationsTab = ({ notifications }) => (
+  <div className="space-y-6">
+    <div className="flex justify-between items-center">
+      <h2 className="text-xl font-bold text-gray-900">Notifications</h2>
+      <button className="text-sm text-green-600 hover:text-green-700">
+        Mark all as read
+      </button>
+    </div>
+
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="divide-y">
+        {notifications.map((notification) => (
+          <div key={notification.id} className={`p-6 hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''}`}>
+            <div className="flex items-start space-x-4">
+              <div className={`p-2 rounded-full ${
+                notification.type === 'appointment' ? 'bg-blue-100' :
+                notification.type === 'payment' ? 'bg-green-100' :
+                'bg-yellow-100'
+              }`}>
+                {notification.type === 'appointment' && <Calendar className="h-4 w-4 text-blue-600" />}
+                {notification.type === 'payment' && <DollarSign className="h-4 w-4 text-green-600" />}
+                {notification.type === 'message' && <MessageCircle className="h-4 w-4 text-yellow-600" />}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-gray-900">{notification.title}</h4>
+                  <span className="text-sm text-gray-500">{notification.time}</span>
+                </div>
+                <p className="text-gray-600 mt-1">{notification.message}</p>
+                {!notification.read && (
+                  <div className="flex items-center mt-2">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                    <span className="text-sm text-blue-600 font-medium">New</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)
+
+// Settings Tab Component
+const SettingsTab = () => (
+  <div className="space-y-6">
+    <h2 className="text-xl font-bold text-gray-900">Settings</h2>
+
+    <div className="grid grid-cols-1 gap-6">
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Account Settings</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-medium text-gray-900">Email Notifications</h4>
+              <p className="text-sm text-gray-500">Receive email notifications for new appointments</p>
+            </div>
+            <button className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-green-600 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+              <span className="translate-x-5 inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+            </button>
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-medium text-gray-900">SMS Notifications</h4>
+              <p className="text-sm text-gray-500">Receive SMS alerts for urgent messages</p>
+            </div>
+            <button className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+              <span className="translate-x-0 inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Security</h3>
+        <div className="space-y-4">
+          <button className="flex items-center space-x-3 text-sm text-gray-900 hover:text-green-600">
+            <Shield className="h-4 w-4" />
+            <span>Change Password</span>
+          </button>
+          <button className="flex items-center space-x-3 text-sm text-gray-900 hover:text-green-600">
+            <Settings className="h-4 w-4" />
+            <span>Two-Factor Authentication</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Support</h3>
+        <div className="space-y-4">
+          <button className="flex items-center space-x-3 text-sm text-gray-900 hover:text-green-600">
+            <HelpCircle className="h-4 w-4" />
+            <span>Help Center</span>
+          </button>
+          <button className="flex items-center space-x-3 text-sm text-gray-900 hover:text-green-600">
+            <MessageCircle className="h-4 w-4" />
+            <span>Contact Support</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+export default NutritionistDashboard
