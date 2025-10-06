@@ -1,9 +1,9 @@
 import axios from 'axios'
 
 // Environment-based API URLs with fallbacks
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
-const AI_API_URL = import.meta.env.VITE_AI_API_URL || 'http://localhost:8002'
-const OLLAMA_API_URL = import.meta.env.VITE_OLLAMA_API_URL || 'http://localhost:8003'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://nutri-vision-backend-production.up.railway.app/api'
+const AI_API_URL = import.meta.env.VITE_AI_API_URL || 'https://nutri-vision-backend-production.up.railway.app/api'
+const OLLAMA_API_URL = import.meta.env.VITE_OLLAMA_API_URL || 'https://nutri-vision-backend-production.up.railway.app'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -48,15 +48,31 @@ api.interceptors.response.use(
 
 // Food recognition and nutrition analysis functions
 export const recognizeFood = async (imageFile) => {
-  const formData = new FormData()
-  formData.append('file', imageFile)
-  
-  const response = await aiApi.post('/recognize-food', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-  return response.data
+  try {
+    const formData = new FormData()
+    formData.append('file', imageFile)
+    
+    console.log('Calling food recognition API:', AI_API_URL + '/recognize-food')
+    
+    const response = await aiApi.post('/recognize-food', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 30000
+    })
+    
+    console.log('Food recognition response:', response.data)
+    return response.data
+  } catch (error) {
+    console.error('Food recognition API error:', error)
+    console.error('Error details:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: error.config?.url
+    })
+    throw error
+  }
 }
 
 export const analyzeNutrition = async (foodName) => {

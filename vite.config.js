@@ -29,7 +29,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_URL || 'http://localhost:5001',
+        target: process.env.VITE_API_URL || 'https://nutri-vision-backend-production.up.railway.app',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       },

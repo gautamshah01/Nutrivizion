@@ -44,7 +44,7 @@ class WebRTCService {
       this.socket.disconnect();
     }
 
-    this.socket = io('http://localhost:5001', {
+    this.socket = io('https://nutri-vision-backend-production.up.railway.app', {
       transports: ['websocket', 'polling'],
       upgrade: true,
       rememberUpgrade: true

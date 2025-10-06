@@ -1,9 +1,39 @@
 import { useState, useEffect } from 'react'
-import { Line, Doughnut, Bar } from 'react-chartjs-2'
 import { Calendar, TrendingUp, Target, Award, Filter, Download } from 'lucide-react'
 import { useUser } from '../contexts/UserContext'
 import { mealService, nutritionService } from '../services'
-import '../utils/chartConfig.js' // Import Chart.js configuration
+
+// Import and configure Chart.js components
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js'
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+)
+
+// Import chart components after registration
+import { Line, Doughnut, Bar } from 'react-chartjs-2'
 
 const Progress = () => {
   const [timeRange, setTimeRange] = useState('week')

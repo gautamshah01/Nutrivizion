@@ -17,7 +17,7 @@ export const useSocketIO = (userId) => {
     console.log('Initializing Socket.IO connection for user:', userId)
     connectionAttempted.current = true
 
-    const socketInstance = io('http://localhost:5001', {
+    const socketInstance = io('https://nutri-vision-backend-production.up.railway.app', {
       transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionDelay: 3000,

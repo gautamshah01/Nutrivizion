@@ -22,10 +22,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "VITE_API_URL": "@vite_api_url",
-    "VITE_AI_API_URL": "@vite_ai_api_url",
-    "VITE_OLLAMA_API_URL": "@vite_ollama_api_url"
-  }
+  ]
 }
