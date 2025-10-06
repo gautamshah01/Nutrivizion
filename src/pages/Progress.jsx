@@ -3,6 +3,7 @@ import { Line, Doughnut, Bar } from 'react-chartjs-2'
 import { Calendar, TrendingUp, Target, Award, Filter, Download } from 'lucide-react'
 import { useUser } from '../contexts/UserContext'
 import { mealService, nutritionService } from '../services'
+import '../utils/chartConfig.js' // Import Chart.js configuration
 
 const Progress = () => {
   const [timeRange, setTimeRange] = useState('week')
@@ -102,7 +103,7 @@ const Progress = () => {
         })
 
         setNutritionTrends({
-          labels: emptyData.map(day => {
+          labels: weekData.map(day => {
             const date = new Date(day.date)
             return date.toLocaleDateString('en-US', { 
               weekday: 'short'
@@ -111,14 +112,14 @@ const Progress = () => {
           datasets: [
             {
               label: 'Calories',
-              data: emptyData.map(day => day.calories),
+              data: weekData.map(day => day.calories),
               borderColor: 'rgb(59, 130, 246)',
               backgroundColor: 'rgba(59, 130, 246, 0.1)',
               tension: 0.4
             },
             {
               label: 'Goal',
-              data: emptyData.map(day => day.goal),
+              data: weekData.map(day => day.goal),
               borderColor: 'rgb(239, 68, 68)',
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
               borderDash: [5, 5],
@@ -158,13 +159,13 @@ const Progress = () => {
   }
 
   const weightChartData = {
-    labels: progressData ? progressData.weightProgress.map(w => 
+    labels: progressData && progressData.weightProgress ? progressData.weightProgress.map(w => 
       new Date(w.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     ) : [],
     datasets: [
       {
         label: 'Weight (kg)',
-        data: progressData ? progressData.weightProgress.map(w => w.weight) : [],
+        data: progressData && progressData.weightProgress ? progressData.weightProgress.map(w => w.weight) : [],
         borderColor: 'rgb(168, 85, 247)',
         backgroundColor: 'rgba(168, 85, 247, 0.1)',
         tension: 0.4,
@@ -318,7 +319,13 @@ const Progress = () => {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Weight Progress</h3>
             <div className="h-64">
-              <Line data={weightChartData} options={chartOptions} />
+              {weightChartData && weightChartData.labels && weightChartData.datasets ? (
+                <Line data={weightChartData} options={chartOptions} />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <p>No weight data available yet</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -326,7 +333,13 @@ const Progress = () => {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Calorie Intake</h3>
             <div className="h-64">
-              <Line data={nutritionTrends} options={chartOptions} />
+              {nutritionTrends && nutritionTrends.labels && nutritionTrends.datasets ? (
+                <Line data={nutritionTrends} options={chartOptions} />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <p>No data available yet</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -334,9 +347,15 @@ const Progress = () => {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Macro Distribution</h3>
             <div className="h-64 flex items-center justify-center">
-              <div className="w-48 h-48">
-                <Doughnut data={macroChartData} options={{ maintainAspectRatio: false }} />
-              </div>
+              {macroChartData && macroChartData.labels && macroChartData.datasets ? (
+                <div className="w-48 h-48">
+                  <Doughnut data={macroChartData} options={{ maintainAspectRatio: false }} />
+                </div>
+              ) : (
+                <div className="text-gray-500">
+                  <p>No macro data available yet</p>
+                </div>
+              )}
             </div>
             <div className="mt-4 flex justify-center space-x-4 text-sm">
               <div className="flex items-center">
