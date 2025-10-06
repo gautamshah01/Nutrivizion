@@ -8,8 +8,28 @@ import '../utils/chartConfig.js' // Import Chart.js configuration
 const Progress = () => {
   const [timeRange, setTimeRange] = useState('week')
   const [progressData, setProgressData] = useState(null)
-  const [nutritionTrends, setNutritionTrends] = useState(null)
+  const [nutritionTrends, setNutritionTrends] = useState({
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [
+      {
+        label: 'Calories',
+        data: [0, 0, 0, 0, 0, 0, 0],
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4
+      },
+      {
+        label: 'Goal',
+        data: [2000, 2000, 2000, 2000, 2000, 2000, 2000],
+        borderColor: 'rgb(239, 68, 68)',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        borderDash: [5, 5],
+        tension: 0.4
+      }
+    ]
+  })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const { user, goals } = useUser()
 
   useEffect(() => {
@@ -18,17 +38,16 @@ const Progress = () => {
 
   const loadProgressData = async () => {
     setLoading(true)
+    setError(null)
     try {
+      // Import API service
+      const { api } = await import('../services/api')
+      
       // Fetch real progress data from backend
-      const token = localStorage.getItem('token')
-      const response = await fetch(`/api/progress/overview?timeRange=${timeRange}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+      const response = await api.get(`/progress/overview?timeRange=${timeRange}`)
 
-      if (response.ok) {
-        const result = await response.json()
+      if (response.status === 200 && response.data) {
+        const result = response.data
         setProgressData(result.data)
         
         // Format nutrition trends for chart
@@ -61,7 +80,8 @@ const Progress = () => {
         }
         setNutritionTrends(chartData)
       } else {
-        // Set empty/zero data when API is not available - no mock data
+        console.log('API response not successful, using empty data')
+        // Set empty/zero data when API is not available
         const today = new Date()
         const weekData = []
         
@@ -130,6 +150,72 @@ const Progress = () => {
       }
     } catch (error) {
       console.error('Error loading progress data:', error)
+      setError('Unable to load progress data. Using default values.')
+      
+      // Set fallback data on error
+      const today = new Date()
+      const weekData = []
+      
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today)
+        date.setDate(date.getDate() - i)
+        weekData.push({
+          date: date.toISOString().split('T')[0],
+          calories: 0,
+          goal: user?.profile?.targetCalories || 2000
+        })
+      }
+      
+      setProgressData({
+        currentWeight: user?.profile?.weight || null,
+        weightProgress: [],
+        calorieIntake: weekData,
+        avgDailyCalories: 0,
+        mealsLogged: 0,
+        achievements: 0,
+        newAchievements: 0,
+        macroDistribution: {
+          protein: 0,
+          carbs: 0,
+          fat: 0
+        },
+        goalProgress: {
+          weightLoss: 0,
+          dailyCalorie: 0,
+          proteinTarget: 0,
+          exerciseGoal: 0
+        },
+        insights: [
+          'Unable to load progress data. Please check your connection.',
+          'Your data will appear here once the service is available.'
+        ]
+      })
+
+      setNutritionTrends({
+        labels: weekData.map(day => {
+          const date = new Date(day.date)
+          return date.toLocaleDateString('en-US', { 
+            weekday: 'short'
+          })
+        }),
+        datasets: [
+          {
+            label: 'Calories',
+            data: weekData.map(day => day.calories),
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4
+          },
+          {
+            label: 'Goal',
+            data: weekData.map(day => day.goal),
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderDash: [5, 5],
+            tension: 0.4
+          }
+        ]
+      })
     }
     setLoading(false)
   }
@@ -139,10 +225,10 @@ const Progress = () => {
     datasets: [
       {
         data: progressData && progressData.macroDistribution ? [
-          progressData.macroDistribution.protein || 0,
-          progressData.macroDistribution.carbs || 0,
-          progressData.macroDistribution.fat || 0
-        ] : [0, 0, 0],
+          Math.max(0, progressData.macroDistribution.protein || 0),
+          Math.max(0, progressData.macroDistribution.carbs || 0),
+          Math.max(0, progressData.macroDistribution.fat || 0)
+        ] : [25, 50, 25], // Default distribution instead of all zeros
         backgroundColor: [
           'rgba(34, 197, 94, 0.8)',
           'rgba(59, 130, 246, 0.8)',
