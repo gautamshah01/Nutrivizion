@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import '../../styles/logo.css';
 
 // Component imports
@@ -8,46 +9,42 @@ import NutritionistApproval from './components/NutritionistApproval';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [adminInfo, setAdminInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { isAuthenticated, user, userType, loading, logout } = useAuth();
 
   useEffect(() => {
-    // Check if admin is logged in
-    const token = localStorage.getItem('adminToken');
-    const info = localStorage.getItem('adminUser');
+    console.log('Admin dashboard auth check:', { 
+      isAuthenticated, 
+      userType, 
+      user: !!user,
+      userRole: user?.role,
+      loading 
+    });
 
-    console.log('Admin auth check:', { token: !!token, info: !!info });
+    if (!loading) {
+      if (!isAuthenticated) {
+        console.log('User not authenticated, redirecting to login');
+        navigate('/login');
+        return;
+      }
 
-    if (!token) {
-      console.log('No admin token found, redirecting to login');
-      navigate('/login');
-      return;
-    }
+      // Check if user has admin role (either from userType or user.role)
+      const isAdminUser = userType === 'admin' || ['super_admin', 'admin', 'moderator'].includes(user?.role);
+      
+      if (!isAdminUser) {
+        console.log('User is not admin, userType:', userType, 'user role:', user?.role);
+        navigate('/login');
+        return;
+      }
 
-    if (!info) {
-      console.log('No admin info found, redirecting to login');
-      navigate('/login');
-      return;
-    }
-
-    try {
-      const parsedInfo = JSON.parse(info);
-      console.log('Admin info parsed successfully:', parsedInfo);
-      setAdminInfo(parsedInfo);
+      console.log('Admin authenticated successfully:', user);
       setIsLoading(false);
-    } catch (error) {
-      console.error('Error parsing admin info:', error);
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('adminUser');
-      navigate('/login');
-      return;
     }
-  }, [navigate]);
+  }, [isAuthenticated, userType, user, loading, navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUser');
+    logout();
     navigate('/login');
   };
 
@@ -110,8 +107,8 @@ const AdminDashboard = () => {
           
           <div className="flex items-center space-x-4">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{adminInfo?.name}</p>
-              <p className="text-xs text-gray-600">{adminInfo?.role}</p>
+              <p className="text-sm font-medium text-gray-900">{user?.name || 'Admin User'}</p>
+              <p className="text-xs text-gray-600">{user?.role || 'admin'}</p>
             </div>
             <button
               onClick={handleLogout}
