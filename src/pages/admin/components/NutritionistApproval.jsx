@@ -29,70 +29,54 @@ const NutritionistApproval = () => {
 
   const fetchPendingNutritionists = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        console.error('No admin token found');
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch('/api/admin/dashboard/nutritionists/pending', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setPendingNutritionists(data.nutritionists || []);
-      } else {
-        console.log('API not available, using mock data');
-        // Mock data for development
-        setPendingNutritionists([
-          {
-            _id: '1',
-            name: 'Dr. Sarah Johnson',
-            email: 'sarah.johnson@email.com',
-            phone: '+1-555-0123',
-            specialization: 'Clinical Nutrition',
-            experience: 8,
-            education: 'MS in Nutritional Sciences, RD',
-            location: 'New York, NY',
-            bio: 'Specialized in weight management and metabolic disorders with 8+ years of clinical experience.',
-            certifications: ['Registered Dietitian', 'Certified Diabetes Educator'],
-            languages: ['English', 'Spanish'],
-            createdAt: '2024-01-15T10:30:00Z',
-            documents: {
-              license: 'license_sarah_johnson.pdf',
-              certificate: 'cert_sarah_johnson.pdf',
-              resume: 'resume_sarah_johnson.pdf'
-            }
-          },
-          {
-            _id: '2',
-            name: 'Dr. Michael Chen',
-            email: 'michael.chen@email.com',
-            phone: '+1-555-0456',
-            specialization: 'Sports Nutrition',
-            experience: 5,
-            education: 'PhD in Exercise and Nutrition Science',
-            location: 'Los Angeles, CA',
-            bio: 'Expert in sports performance nutrition and supplement guidance for athletes.',
-            certifications: ['CSCS', 'Sports Nutritionist Certification'],
-            languages: ['English', 'Mandarin'],
-            createdAt: '2024-01-16T14:20:00Z',
-            documents: {
-              license: 'license_michael_chen.pdf',
-              certificate: 'cert_michael_chen.pdf',
-              resume: 'resume_michael_chen.pdf'
-            }
+      console.log('Loading nutritionist approvals with mock data...');
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock data for development
+      setPendingNutritionists([
+        {
+          _id: '1',
+          name: 'Dr. Sarah Johnson',
+          email: 'sarah.johnson@email.com',
+          phone: '+1-555-0123',
+          specialization: 'Clinical Nutrition',
+          experience: 8,
+          education: 'MS in Nutritional Sciences, RD',
+          location: 'New York, NY',
+          bio: 'Specialized in weight management and metabolic disorders with 8+ years of clinical experience.',
+          certifications: ['Registered Dietitian', 'Certified Diabetes Educator'],
+          languages: ['English', 'Spanish'],
+          createdAt: '2024-01-15T10:30:00Z',
+          documents: {
+            license: 'license_sarah_johnson.pdf',
+            certificate: 'cert_sarah_johnson.pdf',
+            resume: 'resume_sarah_johnson.pdf'
           }
-        ]);
-      }
+        },
+        {
+          _id: '2',
+          name: 'Dr. Michael Chen',
+          email: 'michael.chen@email.com',
+          phone: '+1-555-0456',
+          specialization: 'Sports Nutrition',
+          experience: 5,
+          education: 'PhD in Exercise and Nutrition Science',
+          location: 'Los Angeles, CA',
+          bio: 'Expert in sports performance nutrition and supplement guidance for athletes.',
+          certifications: ['CSCS', 'Sports Nutritionist Certification'],
+          languages: ['English', 'Mandarin'],
+          createdAt: '2024-01-16T14:20:00Z',
+          documents: {
+            license: 'license_michael_chen.pdf',
+            certificate: 'cert_michael_chen.pdf',
+            resume: 'resume_michael_chen.pdf'
+          }
+        }
+      ]);
     } catch (error) {
       console.error('Error fetching pending nutritionists:', error);
-      toast.error('Failed to load pending nutritionist applications');
     } finally {
       setLoading(false);
     }

@@ -49,15 +49,14 @@ api.interceptors.response.use(
 // Food recognition and nutrition analysis functions
 export const recognizeFood = async (imageFile) => {
   try {
-    const formData = new FormData()
-    formData.append('file', imageFile)
+    // Convert image to base64 for backend processing
+    const base64Image = await convertImageToBase64(imageFile)
     
-    console.log('Calling food recognition API:', AI_API_URL + '/recognize-food')
+    console.log('Calling food recognition API via backend:', API_BASE_URL + '/ai/recognize-food')
     
-    const response = await aiApi.post('/recognize-food', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    const response = await api.post('/ai/recognize-food', {
+      image: base64Image
+    }, {
       timeout: 30000
     })
     
@@ -73,6 +72,16 @@ export const recognizeFood = async (imageFile) => {
     })
     throw error
   }
+}
+
+// Helper function to convert image to base64
+const convertImageToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
 }
 
 export const analyzeNutrition = async (foodName) => {

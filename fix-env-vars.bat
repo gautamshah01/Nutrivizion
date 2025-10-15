@@ -1,0 +1,16 @@
+@echo off
+echo Setting up Vercel environment variables...
+
+echo Adding VITE_API_URL...
+vercel env add VITE_API_URL --value="https://nutri-vision-backend-production.up.railway.app/api" --scope=production --yes
+
+echo Adding VITE_AI_API_URL...
+vercel env add VITE_AI_API_URL --value="https://nutri-vision-backend-production.up.railway.app/api" --scope=production --yes
+
+echo Adding VITE_OLLAMA_API_URL...
+vercel env add VITE_OLLAMA_API_URL --value="https://nutri-vision-backend-production.up.railway.app" --scope=production --yes
+
+echo Environment variables set! Redeploying...
+vercel --prod
+
+echo Done!

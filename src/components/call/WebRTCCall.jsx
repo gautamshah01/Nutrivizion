@@ -9,14 +9,15 @@ const WebRTCCall = ({
   appointment,
   callType = 'voice', // 'voice' or 'video'
   onEndCall, 
-  isOpen = false 
+  isOpen = false,
+  isInitiator = false // Whether this user initiated the call
 }) => {
   const { user, userType } = useAuth()
   
   // Debug logging
   useEffect(() => {
-    console.log('WebRTCCall props:', { roomId, appointment, callType, isOpen })
-  }, [roomId, appointment, callType, isOpen])
+    console.log('WebRTCCall props:', { roomId, appointment, callType, isOpen, isInitiator })
+  }, [roomId, appointment, callType, isOpen, isInitiator])
   const localVideoRef = useRef(null)
   const remoteVideoRef = useRef(null)
   const webrtcServiceRef = useRef(null)
@@ -52,7 +53,7 @@ const WebRTCCall = ({
         webrtcServiceRef.current.endCall()
       }
     }
-  }, [isOpen, roomId, connectionTimeout])
+  }, [isOpen, roomId]) // Removed connectionTimeout dependency to prevent infinite loop
 
   // Call duration timer
   useEffect(() => {
@@ -108,7 +109,14 @@ const WebRTCCall = ({
           }
         } else if (state === 'ended-by-peer') {
           toast.dismiss() // Clear all toasts
-          toast.info('Call ended by other participant', { id: 'call-ended-by-peer' })
+          toast('Call ended by other participant', { 
+            id: 'call-ended-by-peer',
+            icon: 'ℹ️',
+            style: {
+              background: '#3b82f6',
+              color: '#fff',
+            }
+          })
           setIsConnected(false)
           // End call immediately when ended by peer
           if (onEndCall) {
@@ -126,24 +134,32 @@ const WebRTCCall = ({
         }
       }
 
-      // Start or join call
-      const localStream = await webrtcService.startCall(roomId, userId, constraints)
+      // Start or join call based on whether we're the initiator
+      const localStream = isInitiator 
+        ? await webrtcService.startCall(roomId, userId, constraints)
+        : await webrtcService.joinCall(roomId, userId, constraints)
       
       // Set local video stream
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = localStream
       }
 
-      // Set connection timeout (30 seconds)
+      // Set connection state to connecting
+      setConnectionState('connecting')
+      
+      // Set connection timeout (90 seconds for slower networks and better NAT traversal)
       const timeoutId = setTimeout(() => {
-        if (connectionState === 'connecting') {
+        console.log('⏰ Connection timeout check:', { connectionState, isConnected })
+        if (connectionState === 'connecting' && !isConnected) {
           console.log('⏰ Connection timeout - call took too long to establish')
-          toast.error('Connection timeout. Please try again.')
+          toast.error('Connection timeout. Please check your internet connection and try again.')
           if (onEndCall) {
             onEndCall()
           }
+        } else {
+          console.log('✅ Timeout check passed - call is connected or in different state')
         }
-      }, 30000) // 30 seconds
+      }, 90000) // 90 seconds
 
       setConnectionTimeout(timeoutId)
       // Don't show joining toast here as it's already shown in AppointmentManagement

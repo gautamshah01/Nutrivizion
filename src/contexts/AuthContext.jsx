@@ -77,14 +77,29 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password, userType = 'patient') => {
     dispatch({ type: 'LOGIN_START' })
     try {
-      const endpoint = userType === 'nutritionist' ? '/nutritionist/auth/login' : '/auth/login'
+      let endpoint = '/auth/login'
+      if (userType === 'nutritionist') {
+        endpoint = '/nutritionist/auth/login'
+      } else if (userType === 'admin') {
+        endpoint = '/auth/login' // Admin uses same endpoint, backend will handle it
+      }
+      
       const response = await api.post(endpoint, { email, password })
+      
       const { user, nutritionist, token } = response.data
+      
+      // For admin, verify the role
+      if (userType === 'admin') {
+        if (!user?.role || !['super_admin', 'admin', 'moderator'].includes(user.role)) {
+          dispatch({ type: 'LOGIN_ERROR', payload: 'Access denied. Admin privileges required.' })
+          return { success: false, error: 'Access denied. Admin privileges required.' }
+        }
+      }
+      
+      const userData = userType === 'nutritionist' ? nutritionist : user
       
       localStorage.setItem('token', token)
       localStorage.setItem('userType', userType)
-      
-      const userData = userType === 'nutritionist' ? nutritionist : user
       dispatch({ type: 'LOGIN_SUCCESS', payload: { user: userData, token, userType } })
       
       return { success: true }

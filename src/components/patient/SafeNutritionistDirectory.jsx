@@ -49,7 +49,8 @@ const SafeNutritionistDirectory = ({ currentUser }) => {
         throw new Error('No authentication token found')
       }
 
-      const response = await fetch('/api/nutritionists/directory', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://nutri-vision-backend-production.up.railway.app/api'
+      const response = await fetch(`${API_BASE_URL}/nutritionists/directory`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

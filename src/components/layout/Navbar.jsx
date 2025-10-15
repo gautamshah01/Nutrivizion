@@ -18,11 +18,12 @@ const Navbar = () => {
   const navigation = [
     { name: 'Home', href: '/', icon: Home, public: true },
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3, protected: true, userTypes: ['patient'] },
+    { name: 'Admin Dashboard', href: '/admin/dashboard', icon: BarChart3, protected: true, userTypes: ['admin'] },
     { name: 'Meal Planner', href: '/meal-planner', icon: Calendar, protected: true, userTypes: ['patient'] },
     { name: 'Food Scanner', href: '/food-scanner', icon: Camera, protected: true, userTypes: ['patient'] },
     { name: 'Appointments', href: '/appointments', icon: Users, protected: true, userTypes: ['patient', 'nutritionist'] },
     { name: 'Progress', href: '/progress', icon: BarChart3, protected: true, userTypes: ['patient'] },
-    { name: 'Profile', href: '/profile', icon: User, protected: true, userTypes: ['nutritionist'] },
+    { name: 'Profile', href: '/profile', icon: User, protected: true, userTypes: ['nutritionist', 'patient', 'admin'] },
   ]
 
   const filteredNavigation = navigation.filter(item => 

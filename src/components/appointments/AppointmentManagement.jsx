@@ -31,6 +31,7 @@ const AppointmentManagement = ({ onChatSelect, onClose, incomingCall, onCallHand
   const [callOpen, setCallOpen] = useState(false)
   const [callAppointment, setCallAppointment] = useState(null)
   const [callType, setCallType] = useState('voice')
+  const [isCallInitiator, setIsCallInitiator] = useState(false)
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [paymentDetails, setPaymentDetails] = useState(null)
 
@@ -49,6 +50,7 @@ const AppointmentManagement = ({ onChatSelect, onClose, incomingCall, onCallHand
     if (appointment) {
       setCallAppointment(appointment)
       setCallType(incomingCallType)
+      setIsCallInitiator(false) // This is an incoming call, so we're not the initiator
       setCallOpen(true)
       toast.success(`Joining ${incomingCallType} call...`)
     }
@@ -180,6 +182,7 @@ const AppointmentManagement = ({ onChatSelect, onClose, incomingCall, onCallHand
       if (response.data.success) {
         setCallAppointment(appointment);
         setCallType(callType);
+        setIsCallInitiator(true); // This is an outgoing call, so we're the initiator
         setCallOpen(true);
         console.log('AppointmentManagement call debug:', { 
           appointment, 
@@ -303,6 +306,7 @@ const AppointmentManagement = ({ onChatSelect, onClose, incomingCall, onCallHand
           onClose={() => setCallOpen(false)}
           appointment={callAppointment}
           callType={callType}
+          isInitiator={isCallInitiator}
         />
       )}
       

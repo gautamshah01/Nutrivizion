@@ -18,11 +18,13 @@ export const useSocketIO = (userId) => {
     connectionAttempted.current = true
 
     const socketInstance = io('https://nutri-vision-backend-production.up.railway.app', {
-      transports: ['polling', 'websocket'],
+      transports: ['websocket', 'polling'],
       reconnection: true,
-      reconnectionDelay: 3000,
-      reconnectionAttempts: 2,
-      timeout: 5000
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 3,
+      timeout: 20000,
+      forceNew: false,
+      path: '/socket.io/'
     })
 
     socketRef.current = socketInstance

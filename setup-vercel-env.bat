@@ -6,8 +6,9 @@ echo.
 echo Add these variables:
 echo.
 echo 1. VITE_API_URL = https://nutri-vision-backend-production.up.railway.app/api
-echo 2. VITE_AI_API_URL = https://your-hf-space.hf.space  
+echo 2. VITE_AI_API_URL = https://nutri-vision-backend-production.up.railway.app/api  
 echo 3. VITE_OLLAMA_API_URL = https://nutri-vision-backend-production.up.railway.app
+echo 4. VITE_NETLIFY_AI_URL = https://nutri-vision-food-ai.netlify.app
 echo.
 echo After adding variables, redeploy with: vercel --prod
 pause

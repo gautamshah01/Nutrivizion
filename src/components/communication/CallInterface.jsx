@@ -2,12 +2,12 @@
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
 
-const CallInterface = ({ isOpen, onClose, appointment, callType = 'voice' }) => {
+const CallInterface = ({ isOpen, onClose, appointment, callType = 'voice', isInitiator = false }) => {
   const { user } = useAuth()
   const roomId = appointment?._id || appointment?.id || `call-${Date.now()}`
   
   // Debug logging
-  console.log('CallInterface rendering:', { isOpen, appointment, callType, roomId })
+  console.log('CallInterface rendering:', { isOpen, appointment, callType, roomId, isInitiator })
   
   const handleCallEnd = () => {
     console.log('Call ended via CallInterface')
@@ -37,6 +37,7 @@ const CallInterface = ({ isOpen, onClose, appointment, callType = 'voice' }) => 
         callType={callType}
         onEndCall={handleCallEnd}
         isOpen={isOpen}
+        isInitiator={isInitiator}
       />
     </div>
   )

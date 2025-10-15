@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
@@ -8,8 +8,21 @@ import toast from 'react-hot-toast'
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [userType, setUserType] = useState('patient')
-  const { login, loading, error, clearError } = useAuth()
+  const { login, loading, error, clearError, isAuthenticated, userType: currentUserType } = useAuth()
   const navigate = useNavigate()
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated && currentUserType) {
+      if (currentUserType === 'admin') {
+        navigate('/admin/dashboard', { replace: true })
+      } else if (currentUserType === 'nutritionist') {
+        navigate('/nutritionist/dashboard', { replace: true })
+      } else {
+        navigate('/dashboard', { replace: true })
+      }
+    }
+  }, [isAuthenticated, currentUserType, navigate])
   
   const {
     register,
@@ -20,43 +33,25 @@ const Login = () => {
   const onSubmit = async (data) => {
     clearError()
     
-    if (userType === 'admin') {
-      // Handle admin login separately
-      try {
-        const response = await fetch('/api/admin/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: data.email,
-            password: data.password
-          })
-        })
-        
-        const result = await response.json()
-        
-        if (result.success) {
-          localStorage.setItem('adminToken', result.token)
-          localStorage.setItem('adminUser', JSON.stringify(result.admin))
-          toast.success('Admin login successful!')
-          navigate('/admin/dashboard')
-        } else {
-          toast.error(result.message || 'Admin login failed')
-        }
-      } catch (error) {
-        toast.error('Admin login failed')
+    // Use AuthContext for all login types (including admin)
+    const result = await login(data.email, data.password, userType)
+    
+    if (result.success) {
+      if (userType === 'admin') {
+        toast.success('Admin login successful!')
+        // Force navigation with replace to prevent back navigation
+        setTimeout(() => {
+          navigate('/admin/dashboard', { replace: true })
+        }, 100)
+      } else if (userType === 'nutritionist') {
+        toast.success('Nutritionist login successful!')
+        navigate('/nutritionist/dashboard', { replace: true })
+      } else {
+        toast.success('Patient login successful!')
+        navigate('/dashboard', { replace: true })
       }
     } else {
-      // Handle patient/nutritionist login
-      const result = await login(data.email, data.password, userType)
-      
-      if (result.success) {
-        toast.success(`${userType === 'nutritionist' ? 'Nutritionist' : 'Patient'} login successful!`)
-        navigate(userType === 'nutritionist' ? '/nutritionist/dashboard' : '/dashboard')
-      } else {
-        toast.error(result.error || 'Login failed')
-      }
+      toast.error(result.error || 'Login failed')
     }
   }
 

@@ -8,30 +8,35 @@ class WebRTCService {
     this.peerConnection = null;
     this.socket = null;
     this.isInitiator = false;
+    this.offerSent = false;
     this.roomId = null;
     this.userId = null;
     this.onRemoteStream = null;
     this.onConnectionStateChange = null;
     this.onIceConnectionStateChange = null;
     
-    // ICE servers configuration - optimized for better connectivity
+    // ICE servers configuration - optimized for faster discovery (max 4 servers)
     this.iceServers = {
       iceServers: [
+        // Google STUN servers
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        // Free TURN servers for better NAT traversal
+        // Primary TURN server
         {
           urls: 'turn:openrelay.metered.ca:80',
           username: 'openrelayproject',
           credential: 'openrelayproject'
         },
+        // Backup TURN server with TLS
         {
           urls: 'turn:openrelay.metered.ca:443',
-          username: 'openrelayproject', 
+          username: 'openrelayproject',
           credential: 'openrelayproject'
         }
       ],
-      iceCandidatePoolSize: 10
+      iceCandidatePoolSize: 5,
+      bundlePolicy: 'max-bundle',
+      rtcpMuxPolicy: 'require'
     };
   }
 
@@ -47,16 +52,30 @@ class WebRTCService {
     this.socket = io('https://nutri-vision-backend-production.up.railway.app', {
       transports: ['websocket', 'polling'],
       upgrade: true,
-      rememberUpgrade: true
+      rememberUpgrade: true,
+      timeout: 20000,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 3,
+      forceNew: false,
+      path: '/socket.io/'
     });
 
     this.socket.on('connect', () => {
-      console.log('Socket.IO connected for WebRTC room:', roomId);
+      console.log('✅ Socket.IO connected for WebRTC room:', roomId, 'User:', userId);
+      console.log('🔌 Socket ID:', this.socket.id);
       this.socket.emit('join_webrtc_room', { roomId, userId });
     });
 
     this.socket.on('webrtc_connected', (data) => {
       console.log('WebRTC signaling connected:', data);
+      // If we're the initiator, start creating offer immediately
+      if (this.isInitiator) {
+        console.log('🚀 Initiator connected, creating offer now');
+        setTimeout(async () => {
+          await this.createOffer();
+        }, 500); // Short delay to ensure connection is stable
+      }
     });
 
     this.socket.on('user_joined', (data) => {
@@ -78,23 +97,32 @@ class WebRTCService {
 
   // Handle signaling messages
   async handleSignalingMessage(message) {
+    console.log('📨 Received signaling message:', message.type);
     switch (message.type) {
       case 'offer':
+        console.log('📥 Handling offer');
         await this.handleOffer(message.offer);
         break;
       case 'answer':
+        console.log('📥 Handling answer');
         await this.handleAnswer(message.answer);
         break;
       case 'ice-candidate':
+        console.log('🧊 Handling ICE candidate');
         await this.handleIceCandidate(message.candidate);
         break;
       case 'user-joined':
-        if (!this.isInitiator) {
-          this.isInitiator = true;
+        console.log('👤 User joined room');
+        // Only create offer if we're the original initiator
+        if (this.isInitiator) {
+          console.log('🚀 As initiator, creating offer immediately after user joined');
           await this.createOffer();
+        } else {
+          console.log('⏳ As non-initiator, waiting for offer');
         }
         break;
       case 'user-left':
+        console.log('👤 User left');
         this.handleUserLeft();
         break;
       case 'call-ended':
@@ -163,15 +191,15 @@ class WebRTCService {
       if (iceState === 'connected' || iceState === 'completed') {
         console.log('✅ ICE connection established!');
       } else if (iceState === 'failed') {
-        console.log('❌ ICE connection failed - may need TURN servers');
+        console.log('❌ ICE connection failed - trying to restart ICE');
+        // Try to restart ICE gathering
+        this.peerConnection.restartIce();
+      } else if (iceState === 'disconnected') {
+        console.log('⚠️ ICE connection disconnected - waiting for reconnection');
       }
-    };
-
-    // Handle ICE connection state changes
-    this.peerConnection.oniceconnectionstatechange = () => {
-      console.log('ICE connection state:', this.peerConnection.iceConnectionState);
+      
       if (this.onIceConnectionStateChange) {
-        this.onIceConnectionStateChange(this.peerConnection.iceConnectionState);
+        this.onIceConnectionStateChange(iceState);
       }
     };
   }
@@ -187,6 +215,13 @@ class WebRTCService {
       console.log('Requesting media permissions:', constraints);
       this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
       console.log('Media permissions granted, stream:', this.localStream);
+      
+      // Ensure stream is active
+      if (this.localStream && !this.localStream.active) {
+        console.warn('⚠️ Media stream is not active, may cause connection issues');
+      } else {
+        console.log('✅ Media stream is active:', this.localStream.active);
+      }
       return this.localStream;
     } catch (error) {
       console.error('Error accessing media devices:', error);
@@ -207,12 +242,17 @@ class WebRTCService {
   // Start call as initiator
   async startCall(roomId, userId, constraints = { video: true, audio: true }) {
     try {
+      console.log('🚀 Starting call as initiator');
       // Get user media
       await this.getUserMedia(constraints);
       
       // Initialize socket and peer connection
       this.initializeSocket(roomId, userId);
       this.createPeerConnection();
+      
+      // Mark as initiator
+      this.isInitiator = true;
+      console.log('✅ Set as initiator');
       
       // Add local stream to peer connection
       this.localStream.getTracks().forEach(track => {
@@ -229,6 +269,7 @@ class WebRTCService {
   // Join existing call
   async joinCall(roomId, userId, constraints = { video: true, audio: true }) {
     try {
+      console.log('🔗 Joining existing call');
       // Get user media
       await this.getUserMedia(constraints);
       
@@ -236,13 +277,18 @@ class WebRTCService {
       this.initializeSocket(roomId, userId);
       this.createPeerConnection();
       
+      // Mark as NOT initiator (will wait for offer or send user-joined)
+      this.isInitiator = false;
+      console.log('✅ Set as non-initiator (joining)');
+      
       // Add local stream to peer connection
       this.localStream.getTracks().forEach(track => {
         this.peerConnection.addTrack(track, this.localStream);
       });
 
-      // Notify other users that we joined
+      // Notify other users that we joined (this may trigger offer creation)
       this.sendSignalingMessage({ type: 'user-joined' });
+      console.log('📤 Sent user-joined signal');
 
       return this.localStream;
     } catch (error) {
@@ -254,13 +300,22 @@ class WebRTCService {
   // Create offer
   async createOffer() {
     try {
+      if (this.offerSent) {
+        console.log('⚠️ Offer already sent, skipping duplicate');
+        return;
+      }
+
+      console.log('📤 Creating WebRTC offer');
       const offer = await this.peerConnection.createOffer();
       await this.peerConnection.setLocalDescription(offer);
+      console.log('✅ Local description set, sending offer');
       
       this.sendSignalingMessage({
         type: 'offer',
         offer: offer
       });
+      this.offerSent = true;
+      console.log('📤 Offer sent via signaling');
     } catch (error) {
       console.error('Error creating offer:', error);
     }
@@ -269,15 +324,19 @@ class WebRTCService {
   // Handle received offer
   async handleOffer(offer) {
     try {
+      console.log('📥 Setting remote description from offer');
       await this.peerConnection.setRemoteDescription(offer);
       
+      console.log('📤 Creating answer');
       const answer = await this.peerConnection.createAnswer();
       await this.peerConnection.setLocalDescription(answer);
+      console.log('✅ Local description set, sending answer');
       
       this.sendSignalingMessage({
         type: 'answer',
         answer: answer
       });
+      console.log('📤 Answer sent via signaling');
     } catch (error) {
       console.error('Error handling offer:', error);
     }
@@ -286,7 +345,9 @@ class WebRTCService {
   // Handle received answer
   async handleAnswer(answer) {
     try {
+      console.log('📥 Setting remote description from answer');
       await this.peerConnection.setRemoteDescription(answer);
+      console.log('✅ Remote description set from answer');
     } catch (error) {
       console.error('Error handling answer:', error);
     }
@@ -295,7 +356,9 @@ class WebRTCService {
   // Handle ICE candidate
   async handleIceCandidate(candidate) {
     try {
+      console.log('🧊 Adding ICE candidate');
       await this.peerConnection.addIceCandidate(candidate);
+      console.log('✅ ICE candidate added');
     } catch (error) {
       console.error('Error handling ICE candidate:', error);
     }
@@ -382,6 +445,9 @@ class WebRTCService {
   // End call
   endCall() {
     console.log('🔚 Ending call and notifying other participants');
+    
+    // Reset offer flag
+    this.offerSent = false;
     
     // Notify other participants that call is ending before cleanup
     if (this.socket && this.socket.connected) {
